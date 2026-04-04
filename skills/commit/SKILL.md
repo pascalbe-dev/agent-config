@@ -1,6 +1,7 @@
 ---
 name: commit
-description: Defines how to create commits. Use whenever a commit is made.
+description: Defines how to create git commits. Use always whenever a git commit is made! Do never run git commits
+  without following this skill! 
 ---
 
 # Commit
