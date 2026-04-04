@@ -1,262 +1,151 @@
 ---
 name: implement-spring-boot-feature
-description: Use when the user wants to implement a refined feature in a Spring Boot project. Triggers on phrases like "Setze Feature X um", "Implementiere Feature Y", "Bauen wir Feature Z". Expects a feature specification at docs/features/<slug>.md (created via refine-feature skill). Orchestrates a full workflow from codebase exploration to open pull request using the main agent directly.
+description: >-
+  Verwenden wenn ein bereits verfeinertes Feature in einem Spring Boot-Projekt umgesetzt werden soll.
+  Trigger: "Setze Feature X um", "Implementiere Feature Y", "Bauen wir Feature Z".
+  Setzt eine Feature-Spezifikation unter docs/features/<slug>.md voraus (erstellt via refine-feature).
 ---
 
-# Implement Spring Boot Feature
+# Spring Boot Feature implementieren
 
-## Overview
+**Vorbedingungen:** Git-Repo mit Remote konfiguriert. Feature-Spezifikation unter `docs/features/<slug>.md` vorhanden. Fehlende Verzeichnisse (`docs/plans/`, `docs/decisions/`) werden automatisch angelegt.
 
-Full feature implementation workflow from codebase exploration to open PR. **The main agent does all work directly** – no subagents. After each phase, the main agent outputs a context status indicator.
+**Sprache:** Immer in der Sprache des Nutzers kommunizieren.
 
-**Preconditions:**
-- Git repo + remote configured
-- Feature specification exists at `docs/features/<slug>.md` (created via `refine-feature` skill)
-- Missing directories (`docs/plans/`, `docs/decisions/`) are created automatically
-
-## Context Status
-
-After every phase, output a context status line:
-
+Nach jeder Phase Kontext-Status ausgeben:
 ```
 📊 Kontext: [████████░░] ~80% — Phase N abgeschlossen
 ```
-
-Use a rough estimate based on conversation volume:
-- Few exchanges, small codebase read → ~10–30%
-- Several phases done, many files read → ~40–60%
-- Many files read, large plan + multiple execution steps → ~70–90%
-
-If you sense the context is getting full (>80%), warn the user:
-> ⚠️ Kontext ist fast voll. Ich fasse wichtige Informationen zusammen, bevor wir weitermachen.
-Then summarize the key findings from all previous phases in a compact block before continuing.
-
----
-
-## Process Flow
-
-```mermaid
-graph TD
-    Phase1["Phase 1: Exploration<br/>(main agent)"]
-    Questions{Further questions needed?}
-    AskTech["Ask technical questions<br/>(main agent)"]
-    Phase2["Phase 2: Integration Test<br/>(main agent)"]
-    Phase3["Phase 3: Feature Planning<br/>(main agent)"]
-    Phase4["Phase 4: Execute step N<br/>(main agent)"]
-    Blocker{Blocker?}
-    HighImpact{High impact?}
-    StopAsk["Stop → ask user<br/>then continue"]
-    Decide["Decide + document<br/>in decisions file"]
-    Commit["Commit step N<br/>(main agent)"]
-    MoreSteps{More steps?}
-    Phase5["Phase 5: Verification<br/>(main agent)"]
-    Phase6["Phase 6: Docs Review<br/>(main agent)"]
-    CreatePR((Create PR<br/>main agent))
-
-    Phase1 --> Questions
-    Questions -- yes --> AskTech
-    Questions -- no --> Phase2
-    AskTech --> Phase2
-    Phase2 --> Phase3
-    Phase3 --> Phase4
-    Phase4 --> Blocker
-    Blocker -- no --> Commit
-    Blocker -- yes --> HighImpact
-    HighImpact -- yes --> StopAsk
-    HighImpact -- no --> Decide
-    StopAsk --> Commit
-    Decide --> Commit
-    Commit --> MoreSteps
-    MoreSteps -- yes --> Phase4
-    MoreSteps -- no --> Phase5
-    Phase5 --> Phase6
-    Phase6 --> CreatePR
-```
+Bei >80%: Zusammenfassung der bisherigen Erkenntnisse ausgeben, bevor weitergemacht wird.
 
 ---
 
 ## Phase 1 – Exploration
 
-**Before exploring the codebase:** Read `docs/explanation/service.md` and the feature specification at `docs/features/<slug>.md` first to gain architectural and domain context.
+Zuerst lesen: `docs/explanation/service.md` und `docs/features/<slug>.md`.
 
-Explore the codebase and produce findings in this format:
-
-```markdown
+Codebase erkunden und Ergebnis ausgeben:
+```
 ## Architektur-Kontext
-
-- Key facts from docs/explanation/service.md relevant to this feature
-
 ## Relevante Dateien
-
-- `path/to/file` – why relevant
-
 ## Bestehende Patterns
-
-- Pattern: description + example file
-
-## Abhängigkeiten & Schnittstellen
-
-- what depends on what
-
 ## Offene technische Fragen
-
-- questions that could not be answered from the codebase
 ```
 
-**If feature is already partially implemented:** Inform user and adjust plan accordingly.
+Falls Feature bereits teilweise implementiert: Nutzer informieren, Plan anpassen.
 
-After exploration: ask remaining technical questions if needed (one at a time using `AskUserQuestion`).
-
-Then output context status.
+Offene technische Fragen einzeln via `AskUserQuestion` klären.
 
 ---
 
-## Phase 2 – Integration Test Planning & Implementation
+## Phase 2 – Integrationstest
 
-### Phase 2a – Integration Test Planning
+### 2a – Planung
 
-Design a high-level integration test that validates the feature end-to-end using:
-- `@SpringBootTest` for Spring Boot context
-- **TestContainers** for external dependencies (database, message broker, etc.)
-
-**Test plan format:**
+Integrationstest-Plan entwerfen (End-to-End, Happy Path):
+- `@SpringBootTest` für Spring-Kontext
+- TestContainers für externe Abhängigkeiten (DB, Message Broker, etc.)
 
 ```
-## Integration Test: [Feature Name]
-
-**Ziel:** What the test validates (end-to-end happy path or critical flow)
-
-**Setup:**
-- Which TestContainers are needed (Postgres, MySQL, Redis, RabbitMQ, etc.)
-- What initial data or configuration is required
-
-**Test Szenarios:**
-- Scenario 1: [description]
-- Scenario 2: [description]
-
-**Assertions:** What the test verifies (response, side effects, database state, etc.)
+## Integrationstest: [Feature-Name]
+**Ziel:** Was validiert wird
+**Setup:** Benötigte TestContainers, Testdaten
+**Szenarien:** Liste der Testfälle
+**Assertions:** Was geprüft wird
 ```
 
-Present plan via `AskUserQuestion`. Approval follows same rules as Phase 3. Save test plan to `docs/plans/YYYY-MM-DD-<feature-name>-integration-test.md`.
+Plan via `AskUserQuestion` vorlegen. Nach Freigabe unter `docs/plans/YYYY-MM-DD-<feature>-integration-test.md` speichern.
 
-### Phase 2b – Integration Test Implementation
+### 2b – Implementierung
 
-Implement the integration test after plan approval:
+1. Testklasse(n) in `src/test/java/...` anlegen
+2. TestContainers konfigurieren
+3. `@SpringBootTest` mit passendem `webEnvironment` aufsetzen
+4. Szenarien und Assertions implementieren
+5. Test ausführen (darf bei noch nicht implementiertem Feature fehlschlagen)
 
-1. Create test class(es) in `src/test/java/...` with proper structure
-2. Configure TestContainers (in `testcontainers.properties` or via code)
-3. Set up `@SpringBootTest` with correct `webEnvironment`
-4. Implement test scenarios from the plan
-5. Add assertions matching the plan
-6. Run test to verify it compiles and executes (may fail on unimplemented feature – that's OK)
-
-Commit following the [commit skill](./../commit/SKILL.md) with type `test`.
-
-Then output context status.
+Commit nach [commit skill](./../commit/SKILL.md) mit Typ `test`.
 
 ---
 
-## Phase 3 – Feature Planning
+## Phase 3 – Feature-Planung
 
-Create a high-level plan and present it via `AskUserQuestion`. Iterate on feedback until approved.
+Plan erstellen und via `AskUserQuestion` vorlegen. Feedback einarbeiten bis zur Freigabe.
 
-**Architecture:** This project uses hexagonal architecture. Plan steps must follow the layer structure defined in the [hexagonal-arch skill](./../hexagonal-arch/SKILL.md). Read that skill before planning.
-
-**Plan step format:**
+Architektur: Hexagonal Architecture – [hexagonal-arch skill](./../hexagonal-arch/SKILL.md) vor der Planung lesen.
 
 ```
-## Schritt N: [Short title]
-**Layer/Bereich:** Domain / Application / Adapter-In (REST) / Adapter-Out (Persistence) / Adapter-Out (HTTP) / Infrastruktur / ...
-**Was passiert:** 1-2 sentences describing what changes
+## Schritt N: [Titel]
+**Layer:** Domain / Application / Adapter-In / Adapter-Out / Infrastruktur
+**Was passiert:** 1–2 Sätze
 ```
 
-**Approval:** Any positive response counts (ja, ok, go, lgtm, approved, passt, sieht gut aus). Silence or rejection does not count.
+Freigabe: Jede positive Reaktion zählt (ja, ok, passt, lgtm). Schweigen zählt nicht.
 
-Save plan to `docs/plans/YYYY-MM-DD-<feature-name>.md`.
-
-Then output context status.
+Plan unter `docs/plans/YYYY-MM-DD-<feature>.md` speichern.
 
 ---
 
-## Phase 4 – Execution (one step at a time, sequential)
+## Phase 4 – Umsetzung
 
-Execute each plan step directly. Reference the exploration findings, current decisions file (if exists), and the [hexagonal-arch skill](./../hexagonal-arch/SKILL.md) as architecture reference. Follow the naming conventions, package structure, and patterns defined there.
+Schritte sequenziell abarbeiten. [hexagonal-arch skill](./../hexagonal-arch/SKILL.md) als Architektur-Referenz nutzen.
 
-**No confirmation questions** for normal implementation decisions.
+Keine Rückfragen bei normalen Implementierungsentscheidungen.
 
-**Blocker logic:**
+| Impact | Vorgehen |
+|--------|----------|
+| Hoch | Stoppen → `AskUserQuestion` → nach Antwort weitermachen |
+| Niedrig | Selbst entscheiden + in `docs/decisions/YYYY-MM-DD-<feature>.md` dokumentieren |
 
-| Impact      | Action                                                                     |
-| ----------- | -------------------------------------------------------------------------- |
-| High impact | Stop → ask user via `AskUserQuestion` → continue after answer              |
-| Low impact  | Decide independently, document in `docs/decisions/YYYY-MM-DD-<feature>.md` |
+Hoch: ungeplante DB-Schema-Änderung, sync/async-Entscheidung, Sicherheitsrelevanz
+Niedrig: Variablennamen, interne Implementierungsdetails, Log-Format
 
-**High impact examples:** unplanned DB schema change, sync vs. async decision, external API differs from assumptions, security-relevant choice
-
-**Low impact examples:** variable/method names, internal implementation details, validation order, log format
-
-After each step: commit following the [commit skill](./../commit/SKILL.md), then output context status.
+Nach jedem Schritt: Commit nach [commit skill](./../commit/SKILL.md).
 
 ---
 
-## Phase 5 – Verification
+## Phase 5 – Verifikation
 
-Run all checks sequentially. A failure stops subsequent steps.
-
-1. Tests → if failing: try to fix once; if unresolvable → stop, report to user
+Sequenziell, Fehler stoppt Folgeschritte:
+1. Tests → bei Fehler: einmal selbst beheben; sonst Nutzer informieren
 2. Linting → auto-fix
-3. Formatting → auto-fix
-4. Build → if failing → stop, report to user with exact error
-
-Then output context status.
+3. Formatierung → auto-fix
+4. Build → bei Fehler: Nutzer mit genauem Fehler informieren
 
 ---
 
-## Phase 6 – Docs Review
+## Phase 6 – Doku & PR
 
-Check whether the architecture doc is still accurate after the feature was built:
+`docs/explanation/service.md` prüfen: Was hat sich durch Phase 4 geändert? Veraltetes aktualisieren, Stil beibehalten. Falls nichts geändert: „Keine Änderungen nötig". Nur diese Datei anpassen.
 
-1. Read `docs/explanation/service.md`
-2. Review what changed in Phase 4 (new collections, new endpoints, new integrations, renamed concepts, etc.)
-3. Update the doc where it is now outdated or incomplete – keep the same concise style
-4. If nothing changed: note "Keine Änderungen nötig"
+Bei Änderungen: Commit mit Typ `ai(docs)` nach [commit skill](./../commit/SKILL.md).
 
-**Scope:** Only update `docs/explanation/service.md`. No other docs.
-
-If the doc was changed, commit following the [commit skill](./../commit/SKILL.md) with type `ai(docs)`.
-
-Then create PR:
-
-**PR format:**
-
+PR erstellen:
 ```
-Title: feat(scope): short description   ← see commit skill
+Title: feat(scope): Kurzbeschreibung
 
-Body:
 ## Summary
-- Step 1: what was done
-- Step 2: what was done
+- Schritt 1: was gemacht wurde
+- Schritt 2: was gemacht wurde
 
 ## Plan
-See: docs/plans/YYYY-MM-DD-<feature>.md
+Siehe: docs/plans/YYYY-MM-DD-<feature>.md
 
 ## Decisions
-[only if exists] See: docs/decisions/YYYY-MM-DD-<feature>.md
+[nur falls vorhanden] Siehe: docs/decisions/YYYY-MM-DD-<feature>.md
 
 🤖 Generated with Claude Code
 ```
 
 ---
 
-## Decisions File Format
+## Format: Decisions-Datei
 
-`docs/decisions/YYYY-MM-DD-<feature>.md` – one file per feature, all low-impact decisions collected:
-
+`docs/decisions/YYYY-MM-DD-<feature>.md`:
 ```markdown
-# Decisions: <feature name>
+# Decisions: <Feature-Name>
 
-## <Schritt N> – <short title>
-
-**Entscheidung:** What was decided
-**Grund:** Why
+## Schritt N – <Titel>
+**Entscheidung:** Was entschieden wurde
+**Grund:** Warum
 ```
