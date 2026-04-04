@@ -101,8 +101,9 @@ Identify all domain-specific terms and concepts that appeared during Phase 1.
 Note which terms are already defined in `product.md` (read during Preparation) – do not redefine them unless the user explicitly wants to update a definition.
 
 For each new term:
-1. Propose a clear, concise definition based on the conversation so far
-2. Ask the user via `AskUserQuestion` whether the definition is correct – adjust as needed
+1. Propose a German term (used in discussion) and an English term (used in code)
+2. Propose a clear, concise definition based on the conversation so far
+3. Ask the user via `AskUserQuestion` whether the terms and definition are correct – adjust as needed
 
 Present all identified terms and their definitions in a table. Ask:
 
@@ -115,9 +116,9 @@ Wait for confirmation or corrections before proceeding.
 ```markdown
 ## Neue / Aktualisierte Begriffe
 
-| Begriff | Definition |
-|---------|-----------|
-| [Term]  | [Definition] |
+| Deutsch | Englisch (Code) | Definition |
+|---------|----------------|-----------|
+| [Deutscher Begriff] | [English term] | [Definition] |
 ```
 
 If no new terms were identified, state this explicitly and proceed.
@@ -208,9 +209,9 @@ Update or create the file with the following structure. Merge new content into t
 
 ## Ubiquitäre Sprache
 
-| Begriff | Definition |
-|---------|-----------|
-| [Term]  | [Definition] |
+| Deutsch | Englisch (Code) | Definition |
+|---------|----------------|-----------|
+| [Deutscher Begriff] | [English term] | [Definition] |
 ```
 
 **If the file doesn't exist:** Ask the user for the product name and a short description before creating it.
