@@ -1,15 +1,18 @@
 ---
-name: building-features
-description: Use when the user describes a new feature they want to build, implement, or add. Triggers on phrases like "Ich will X implementieren", "Wir brauchen Feature Y", "Bauen wir Feature Z". Orchestrates a full workflow from discovery to open pull request using specialized subagents for each phase.
+name: implement-spring-boot-feature
+description: Use when the user wants to implement a refined feature in a Spring Boot project. Triggers on phrases like "Setze Feature X um", "Implementiere Feature Y", "Bauen wir Feature Z". Expects a feature specification at docs/features/<slug>.md (created via refine-feature skill). Orchestrates a full workflow from codebase exploration to open pull request using the main agent directly.
 ---
 
-# Building Features
+# Implement Spring Boot Feature
 
 ## Overview
 
-Full feature development workflow from first description to open PR. **The main agent does all work directly** – no subagents. After each phase, the main agent outputs a context status indicator.
+Full feature implementation workflow from codebase exploration to open PR. **The main agent does all work directly** – no subagents. After each phase, the main agent outputs a context status indicator.
 
-**Preconditions:** Git repo + remote configured. Missing directories (`docs/plans/`, `docs/decisions/`) are created automatically.
+**Preconditions:**
+- Git repo + remote configured
+- Feature specification exists at `docs/features/<slug>.md` (created via `refine-feature` skill)
+- Missing directories (`docs/plans/`, `docs/decisions/`) are created automatically
 
 ## Context Status
 
@@ -34,31 +37,29 @@ Then summarize the key findings from all previous phases in a compact block befo
 
 ```mermaid
 graph TD
-    Phase1["Phase 1: Discovery<br/>(main agent)"]
-    Phase2["Phase 2: Exploration<br/>(main agent)"]
+    Phase1["Phase 1: Exploration<br/>(main agent)"]
     Questions{Further questions needed?}
     AskTech["Ask technical questions<br/>(main agent)"]
-    Phase3["Phase 3: Integration Test<br/>(main agent)"]
-    Phase4["Phase 4: Feature Planning<br/>(main agent)"]
-    Phase5["Phase 5: Execute step N<br/>(main agent)"]
+    Phase2["Phase 2: Integration Test<br/>(main agent)"]
+    Phase3["Phase 3: Feature Planning<br/>(main agent)"]
+    Phase4["Phase 4: Execute step N<br/>(main agent)"]
     Blocker{Blocker?}
     HighImpact{High impact?}
     StopAsk["Stop → ask user<br/>then continue"]
     Decide["Decide + document<br/>in decisions file"]
     Commit["Commit step N<br/>(main agent)"]
     MoreSteps{More steps?}
-    Phase6["Phase 6: Verification<br/>(main agent)"]
-    Phase7["Phase 7: Docs Review<br/>(main agent)"]
+    Phase5["Phase 5: Verification<br/>(main agent)"]
+    Phase6["Phase 6: Docs Review<br/>(main agent)"]
     CreatePR((Create PR<br/>main agent))
 
-    Phase1 --> Phase2
-    Phase2 --> Questions
+    Phase1 --> Questions
     Questions -- yes --> AskTech
-    Questions -- no --> Phase3
-    AskTech --> Phase3
+    Questions -- no --> Phase2
+    AskTech --> Phase2
+    Phase2 --> Phase3
     Phase3 --> Phase4
-    Phase4 --> Phase5
-    Phase5 --> Blocker
+    Phase4 --> Blocker
     Blocker -- no --> Commit
     Blocker -- yes --> HighImpact
     HighImpact -- yes --> StopAsk
@@ -66,37 +67,17 @@ graph TD
     StopAsk --> Commit
     Decide --> Commit
     Commit --> MoreSteps
-    MoreSteps -- yes --> Phase5
-    MoreSteps -- no --> Phase6
-    Phase6 --> Phase7
-    Phase7 --> CreatePR
+    MoreSteps -- yes --> Phase4
+    MoreSteps -- no --> Phase5
+    Phase5 --> Phase6
+    Phase6 --> CreatePR
 ```
 
 ---
 
-## Phase 1 – Discovery
+## Phase 1 – Exploration
 
-Use `AskUserQuestion` to ask clarifying **business/domain** questions – one at a time. No technical details, no code.
-
-End by summarizing understanding in 3–5 sentences and asking: "Ist das korrekt? Dann starte ich die technische Exploration." Wait for confirmation before proceeding.
-
-**Output after confirmation:**
-
-```
-## Fachliche Zusammenfassung
-[3-5 sentences]
-
-## Offene fachliche Punkte
-[any unresolved domain questions]
-```
-
-Then output context status.
-
----
-
-## Phase 2 – Exploration
-
-**Before exploring the codebase:** Read `docs/explanation/service.md` first to gain architectural context.
+**Before exploring the codebase:** Read `docs/explanation/service.md` and the feature specification at `docs/features/<slug>.md` first to gain architectural and domain context.
 
 Explore the codebase and produce findings in this format:
 
@@ -130,9 +111,9 @@ Then output context status.
 
 ---
 
-## Phase 3 – Integration Test Planning & Implementation
+## Phase 2 – Integration Test Planning & Implementation
 
-### Phase 3a – Integration Test Planning
+### Phase 2a – Integration Test Planning
 
 Design a high-level integration test that validates the feature end-to-end using:
 - `@SpringBootTest` for Spring Boot context
@@ -156,9 +137,9 @@ Design a high-level integration test that validates the feature end-to-end using
 **Assertions:** What the test verifies (response, side effects, database state, etc.)
 ```
 
-Present plan via `AskUserQuestion`. Approval follows same rules as Phase 4. Save test plan to `docs/plans/YYYY-MM-DD-<feature-name>-integration-test.md`.
+Present plan via `AskUserQuestion`. Approval follows same rules as Phase 3. Save test plan to `docs/plans/YYYY-MM-DD-<feature-name>-integration-test.md`.
 
-### Phase 3b – Integration Test Implementation
+### Phase 2b – Integration Test Implementation
 
 Implement the integration test after plan approval:
 
@@ -175,7 +156,7 @@ Then output context status.
 
 ---
 
-## Phase 4 – Feature Planning
+## Phase 3 – Feature Planning
 
 Create a high-level plan and present it via `AskUserQuestion`. Iterate on feedback until approved.
 
@@ -197,7 +178,7 @@ Then output context status.
 
 ---
 
-## Phase 5 – Execution (one step at a time, sequential)
+## Phase 4 – Execution (one step at a time, sequential)
 
 Execute each plan step directly. Reference the exploration findings, current decisions file (if exists), and the [hexagonal-arch skill](./../hexagonal-arch/SKILL.md) as architecture reference. Follow the naming conventions, package structure, and patterns defined there.
 
@@ -218,7 +199,7 @@ After each step: commit following the [commit skill](./../commit/SKILL.md), then
 
 ---
 
-## Phase 6 – Verification
+## Phase 5 – Verification
 
 Run all checks sequentially. A failure stops subsequent steps.
 
@@ -231,12 +212,12 @@ Then output context status.
 
 ---
 
-## Phase 7 – Docs Review
+## Phase 6 – Docs Review
 
 Check whether the architecture doc is still accurate after the feature was built:
 
 1. Read `docs/explanation/service.md`
-2. Review what changed in Phase 5 (new collections, new endpoints, new integrations, renamed concepts, etc.)
+2. Review what changed in Phase 4 (new collections, new endpoints, new integrations, renamed concepts, etc.)
 3. Update the doc where it is now outdated or incomplete – keep the same concise style
 4. If nothing changed: note "Keine Änderungen nötig"
 
