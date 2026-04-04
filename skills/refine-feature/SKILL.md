@@ -32,10 +32,11 @@ After every phase, output a context status line:
 ```
 
 Use a rough estimate:
-- Phase 1 done → ~20%
-- Phase 2 done → ~40%
-- Phase 3 done → ~55%
-- Phase 4 done → ~70%
+- Preparation done → ~10%
+- Phase 1 done → ~25%
+- Phase 2 done → ~45%
+- Phase 3 done → ~60%
+- Phase 4 done → ~75%
 - Phase 5 done → ~100%
 
 ---
@@ -43,12 +44,42 @@ Use a rough estimate:
 ## Process Flow
 
 ```
-Phase 1 (Feature verstehen)
-  → Phase 2 (Begriffe & Ubiquitous Language)
-    → Phase 3 (Nutzergruppen)
-      → Phase 4 (Akzeptanzkriterien)
-        → Phase 5 (Dokumentation schreiben & committen)
+Preparation (Bestehende Doku lesen)
+  → Phase 1 (Feature verstehen)
+    → Phase 2 (Begriffe & Ubiquitous Language)
+      → Phase 3 (Nutzergruppen)
+        → Phase 4 (Akzeptanzkriterien)
+          → Phase 5 (Dokumentation schreiben & committen)
 ```
+
+---
+
+## Preparation – Read Existing Documentation
+
+**Before asking the user anything**, silently read all existing documentation to build context:
+
+1. Read `docs/explanation/product.md` if it exists – note the product description, all user groups, and all defined terms
+2. Read all files in `docs/features/` if the directory exists – note which features already exist and what they cover
+
+Use this context throughout the entire conversation to:
+- Ask more targeted questions (avoid asking about things already documented)
+- Detect terminology inconsistencies early
+- Notice if the new feature overlaps with or extends an existing one
+- Suggest relevant user groups from the existing list
+
+After reading, output a brief summary of what was found:
+
+```
+📚 Bestehende Dokumentation geladen:
+- Produktdoku: [gefunden / nicht vorhanden]
+- Bekannte Begriffe: [N Begriffe]
+- Bekannte Nutzergruppen: [list or "keine"]
+- Bestehende Features: [list of feature names or "keine"]
+```
+
+Then proceed immediately to Phase 1 without waiting for user input.
+
+Then output context status.
 
 ---
 
@@ -87,7 +118,7 @@ Then output context status.
 
 Identify all domain-specific terms and concepts that appeared during Phase 1.
 
-**Before starting:** Check if `docs/explanation/product.md` exists and read it. Note which terms are already defined there – do not redefine them unless the user explicitly wants to update a definition.
+Note which terms are already defined in `product.md` (read during Preparation) – do not redefine them unless the user explicitly wants to update a definition.
 
 For each new term:
 1. Propose a clear, concise definition based on the conversation so far
@@ -119,7 +150,7 @@ Then output context status.
 
 Identify which user groups interact with this feature.
 
-**Before starting:** Read `docs/explanation/product.md` to know which user groups already exist.
+Use the user groups already read from `docs/explanation/product.md` during Preparation.
 
 1. Determine which existing groups are relevant for this feature and how they interact with it
 2. Ask if any new user groups need to be introduced for this feature
@@ -183,7 +214,7 @@ Write the documentation. No further questions – write based on everything disc
 
 ### 5a – Update `docs/explanation/product.md`
 
-Read the file if it exists. Then update or create it with the following structure. Merge new content into existing content – **never remove existing entries** unless explicitly instructed.
+Update or create the file with the following structure. Merge new content into the existing content already read during Preparation – **never remove existing entries** unless explicitly instructed.
 
 ```markdown
 # [Product Name]
