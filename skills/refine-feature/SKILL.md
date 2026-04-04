@@ -23,24 +23,6 @@ Structured feature refinement conversation that produces:
 
 **Language:** Conduct the entire conversation in the same language the user uses.
 
-## Context Status
-
-After every phase, output a context status line:
-
-```
-📊 Kontext: [████████░░] ~80% — Phase N abgeschlossen
-```
-
-Use a rough estimate:
-- Preparation done → ~10%
-- Phase 1 done → ~25%
-- Phase 2 done → ~45%
-- Phase 3 done → ~60%
-- Phase 4 done → ~75%
-- Phase 5 done → ~100%
-
----
-
 ## Process Flow
 
 ```
@@ -79,7 +61,6 @@ After reading, output a brief summary of what was found:
 
 Then proceed immediately to Phase 1 without waiting for user input.
 
-Then output context status.
 
 ---
 
@@ -110,7 +91,6 @@ Wait for confirmation before proceeding.
 [any unresolved questions – leave empty if none]
 ```
 
-Then output context status.
 
 ---
 
@@ -142,7 +122,6 @@ Wait for confirmation or corrections before proceeding.
 
 If no new terms were identified, state this explicitly and proceed.
 
-Then output context status.
 
 ---
 
@@ -176,7 +155,6 @@ Wait for confirmation before proceeding.
 
 If no new groups are needed, state this explicitly.
 
-Then output context status.
 
 ---
 
@@ -204,7 +182,6 @@ Iterate until the user confirms. Aim for 3–8 criteria that cover the happy pat
 - ...
 ```
 
-Then output context status.
 
 ---
 
