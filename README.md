@@ -15,3 +15,9 @@ git submodule add git@github.com:pascalbe-dev/agent-config.git .claude
 ```shell
 git submodule update --remote --merge
 ```
+
+- get the submodule if it has not been added during cloning
+
+```shell
+git submodule update --init --recursive
+```
