@@ -1,271 +1,143 @@
 ---
 name: refine-feature
 description: >-
-  Use when the user wants to refine, specify, or discuss a new feature idea
-  before implementation. Triggers on phrases like "Lass uns Feature X
-  verfeinern", "Ich habe eine Idee für Feature Y", "Können wir Feature Z
-  besprechen", "Refine Feature X". Works for any product type (frontend,
-  backend, mobile, etc.). Guides a structured conversation to clarify
-  requirements, terminology, and user groups, then documents everything as
-  Markdown files.
+  Verwenden wenn der Nutzer ein Feature verfeinern, spezifizieren oder besprechen möchte.
+  Trigger: "Lass uns Feature X verfeinern", "Ich habe eine Idee für Feature Y",
+  "Können wir Feature Z besprechen". Funktioniert für alle Produkttypen (Frontend,
+  Backend, Mobile, etc.).
 ---
 
-# Refine Feature
+# Feature Refinement
 
-## Overview
+Ergebnis dieses Skills:
+1. `docs/explanation/product.md` – aktualisiert mit neuen Begriffen und Nutzergruppen
+2. `docs/features/<feature-slug>.md` – Feature-Spezifikation mit Akzeptanzkriterien
 
-Structured feature refinement conversation that produces:
-
-1. Updated `docs/explanation/product.md` – product-level knowledge base (ubiquitous language, user groups)
-2. `docs/features/<feature-slug>.md` – feature specification (user story, acceptance criteria, motivation)
-
-**Preconditions:** The `docs/` directory is created automatically if it doesn't exist.
-
-**Language:** Conduct the entire conversation in the same language the user uses.
-
-## Process Flow
-
-```
-Preparation (Bestehende Doku lesen)
-  → Phase 1 (Feature verstehen)
-    → Phase 2 (Begriffe & Ubiquitous Language)
-      → Phase 3 (Nutzergruppen)
-        → Phase 4 (Akzeptanzkriterien)
-          → Phase 5 (Dokumentation schreiben & committen)
-```
+**Sprache:** Immer in der Sprache des Nutzers kommunizieren.
 
 ---
 
-## Preparation – Read Existing Documentation
+## Vorbereitung
 
-**Before asking the user anything**, silently read all existing documentation to build context:
+**Vor dem ersten Satz an den Nutzer** stillschweigend lesen:
+- `docs/explanation/product.md` – Produktbeschreibung, Nutzergruppen, Glossar
+- Alle Dateien in `docs/features/` – bestehende Features
 
-1. Read `docs/explanation/product.md` if it exists – note the product description, all user groups, and all defined terms
-2. Read all files in `docs/features/` if the directory exists – note which features already exist and what they cover
-
-Use this context throughout the entire conversation to:
-- Ask more targeted questions (avoid asking about things already documented)
-- Detect terminology inconsistencies early
-- Notice if the new feature overlaps with or extends an existing one
-- Suggest relevant user groups from the existing list
-
-After reading, output a brief summary of what was found:
-
+Kurze Zusammenfassung ausgeben:
 ```
-📚 Bestehende Dokumentation geladen:
+📚 Dokumentation geladen:
 - Produktdoku: [gefunden / nicht vorhanden]
-- Bekannte Begriffe: [N Begriffe]
-- Bekannte Nutzergruppen: [list or "keine"]
-- Bestehende Features: [list of feature names or "keine"]
+- Bekannte Begriffe: [N]
+- Nutzergruppen: [Liste oder "keine"]
+- Bestehende Features: [Liste oder "keine"]
 ```
 
-Then proceed immediately to Phase 1 without waiting for user input.
-
+Danach direkt mit Phase 1 beginnen.
 
 ---
 
-## Phase 1 – Feature Understanding
+## Phase 1 – Feature verstehen
 
-If the user hasn't described the feature yet, ask them to do so first.
+Klärende Fragen stellen (eine nach der anderen, kein Code/Technik):
+- Welches Problem löst das Feature?
+- Wer profitiert davon und wie?
+- Welches Verhalten erwartet der Nutzer?
+- Gibt es Einschränkungen oder Randfälle?
 
-Then ask clarifying questions **one at a time** using `AskUserQuestion`. Focus only on business/domain understanding – no technical questions:
-
-- What problem does this feature solve?
-- Who benefits from it, and how?
-- What is the expected behavior from the user's perspective?
-- Are there any constraints, boundaries, or edge cases to consider?
-
-Continue asking until the feature is sufficiently clear. When done, summarize the feature in 3–5 sentences and ask:
-
-> "Ist das eine korrekte Zusammenfassung? Dann gehen wir weiter zur Klärung der Fachbegriffe."
-
-Wait for confirmation before proceeding.
-
-**Output after confirmation:**
-
-```markdown
-## Feature-Zusammenfassung
-[3–5 sentences]
-
-## Offene Punkte
-[any unresolved questions – leave empty if none]
-```
-
+Abschluss: Feature in 3–5 Sätzen zusammenfassen, Bestätigung abwarten.
 
 ---
 
-## Phase 2 – Terminology & Ubiquitous Language
+## Phase 2 – Begriffe & Ubiquitous Language
 
-Identify all domain-specific terms and concepts that appeared during Phase 1.
+Fachbegriffe aus Phase 1 identifizieren. Bereits definierte Begriffe aus `product.md` nicht neu definieren.
 
-Note which terms are already defined in `product.md` (read during Preparation) – do not redefine them unless the user explicitly wants to update a definition.
+Für jeden neuen Begriff:
+- Deutschen Begriff (für Diskussion) und englischen Begriff (für Code) vorschlagen
+- Definition vorschlagen, Bestätigung einholen
 
-For each new term:
-1. Propose a German term (used in discussion) and an English term (used in code)
-2. Propose a clear, concise definition based on the conversation so far
-3. Ask the user via `AskUserQuestion` whether the terms and definition are correct – adjust as needed
-
-Present all identified terms and their definitions in a table. Ask:
-
-> "Sind diese Begriffe korrekt definiert? Fehlt noch ein wichtiger Begriff?"
-
-Wait for confirmation or corrections before proceeding.
-
-**Output after confirmation:**
-
+Ausgabe nach Bestätigung:
 ```markdown
-## Neue / Aktualisierte Begriffe
-
 | Deutsch | Englisch (Code) | Definition |
 |---------|----------------|-----------|
-| [Deutscher Begriff] | [English term] | [Definition] |
+| ...     | ...            | ...       |
 ```
-
-If no new terms were identified, state this explicitly and proceed.
-
 
 ---
 
-## Phase 3 – User Groups
+## Phase 3 – Nutzergruppen
 
-Identify which user groups interact with this feature.
-
-Use the user groups already read from `docs/explanation/product.md` during Preparation.
-
-1. Determine which existing groups are relevant for this feature and how they interact with it
-2. Ask if any new user groups need to be introduced for this feature
-3. For each new group: clarify who they are, what their role is, and what their goals are
-
-Present findings and ask:
-
-> "Sind alle betroffenen Nutzergruppen vollständig erfasst?"
-
-Wait for confirmation before proceeding.
-
-**Output after confirmation:**
-
-```markdown
-## Betroffene Nutzergruppen
-
-- **[Group]**: [their role in this feature]
-
-## Neue Nutzergruppen
-
-- **[Group]**: [full description, role, goals]
-```
-
-If no new groups are needed, state this explicitly.
-
+Bestehende Nutzergruppen aus `product.md` verwenden. Klären welche Gruppen betroffen sind und ob neue eingeführt werden müssen. Für neue Gruppen: Rolle und Ziele klären.
 
 ---
 
-## Phase 4 – Acceptance Criteria
+## Phase 4 – Akzeptanzkriterien
 
-Define clear, testable acceptance criteria for the feature.
+3–8 testbare Kriterien definieren. Format:
+- „Gegeben [Vorbedingung], wenn [Aktion], dann [Ergebnis]"
+- Oder einfache Bullet-Points für UI/UX-Kriterien
 
-Start from the feature summary and acceptance signals that emerged during the conversation. For each criterion, use one of these formats:
-
-- **Scenario format:** "Gegeben [Vorbedingung], wenn [Aktion], dann [Erwartetes Ergebnis]"
-- **Bullet format:** For simpler UI/UX or non-interactive criteria
-
-Draft a list and present it. Ask:
-
-> "Sind diese Akzeptanzkriterien vollständig und korrekt? Sollen wir etwas ergänzen oder anpassen?"
-
-Iterate until the user confirms. Aim for 3–8 criteria that cover the happy path and the most important edge cases.
-
-**Output after confirmation:**
-
-```markdown
-## Akzeptanzkriterien
-
-- Gegeben [X], wenn [Y], dann [Z]
-- ...
-```
-
+Entwurf vorlegen, iterieren bis Bestätigung.
 
 ---
 
-## Phase 5 – Documentation
+## Phase 5 – Dokumentation schreiben
 
-Write the documentation. No further questions – write based on everything discussed.
+### `docs/explanation/product.md`
 
-### 5a – Update `docs/explanation/product.md`
-
-Update or create the file with the following structure. Merge new content into the existing content already read during Preparation – **never remove existing entries** unless explicitly instructed.
+Bestehenden Inhalt erweitern – **niemals Einträge entfernen**. Alphabetische Reihenfolge im Glossar. Falls Datei nicht existiert: Nutzer nach Produktname und Kurzbeschreibung fragen.
 
 ```markdown
-# [Product Name]
+# [Produktname]
 
 ## Beschreibung
-
-[Short product description]
+[Kurzbeschreibung]
 
 ## Nutzergruppen
 
-### [Group Name]
-
-[Description of the user group, their goals, and context]
+### [Gruppenname]
+[Beschreibung, Rolle, Ziele]
 
 ## Ubiquitäre Sprache
 
 | Deutsch | Englisch (Code) | Definition |
 |---------|----------------|-----------|
-| [Deutscher Begriff] | [English term] | [Definition] |
+| ...     | ...            | ...       |
 ```
 
-**If the file doesn't exist:** Ask the user for the product name and a short description before creating it.
+### `docs/features/<feature-slug>.md`
 
-**Rules:**
-- Preserve existing writing style and tone
-- Only add new terms and user groups from this refinement session
-- Keep alphabetical order within the glossary table
-
-### 5b – Create `docs/features/<feature-slug>.md`
-
-Derive the slug from the feature name: lowercase, words separated by hyphens, no special characters.
-Example: "Benutzer Benachrichtigung" → `benutzer-benachrichtigung`
-
-Create the file with this structure:
+Slug: Kleinbuchstaben, Bindestriche, keine Sonderzeichen. Beispiel: „Benutzer Benachrichtigung" → `benutzer-benachrichtigung`
 
 ```markdown
-# Feature: [Feature Name]
+# Feature: [Name]
 
 ## Motivation
-
-[Why is this feature needed? What problem does it solve? What triggered this request?]
+[Problem, Grund, Auslöser]
 
 ## Nutzergruppen
-
-[Which user groups are affected and how they interact with this feature]
+[Betroffene Gruppen und ihre Rolle]
 
 ## Beschreibung
-
-[Detailed description of the feature from a user perspective. No implementation details.]
+[Feature aus Nutzerperspektive, keine Implementierungsdetails]
 
 ## Akzeptanzkriterien
-
 - Gegeben [X], wenn [Y], dann [Z]
-- ...
 
 ## Offene Fragen
-
-[Unresolved questions or follow-up topics from the refinement session. Leave empty if none.]
+[Ungeklärte Punkte – leer lassen falls keine]
 ```
 
-### 5c – Commit
+### Commit
 
-After both files are written, commit following the [commit skill](./../commit/SKILL.md) with type `ai(docs)`:
-
+Commit nach [commit skill](./../commit/SKILL.md) mit Typ `ai(docs)`:
 ```
 ai(docs): refine feature <feature-name>
 ```
 
-Then output a final summary:
-
+Abschließende Ausgabe:
 ```
 ✅ Refinement abgeschlossen!
-
-📄 Produktdokumentation aktualisiert: docs/explanation/product.md
-📄 Feature-Dokumentation erstellt:    docs/features/<feature-slug>.md
+📄 docs/explanation/product.md aktualisiert
+📄 docs/features/<feature-slug>.md erstellt
 ```
