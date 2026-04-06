@@ -9,135 +9,72 @@ description: >-
 
 # Feature Refinement
 
-Ergebnis dieses Skills:
-1. `docs/explanation/product.md` – aktualisiert mit neuen Begriffen und Nutzergruppen
-2. `docs/features/<feature-slug>.md` – Feature-Spezifikation mit Akzeptanzkriterien
+Iterative Spezifikation neuer Features oder Erweiterungen bestehender Features.
 
-**Sprache:** Immer in der Sprache des Nutzers kommunizieren.
+**Sprache:** In der Sprache des Nutzers kommunizieren.
 
 ---
 
 ## Vorbereitung
 
-**Vor dem ersten Satz an den Nutzer** stillschweigend lesen:
-- `docs/explanation/product.md` – Produktbeschreibung, Nutzergruppen, Glossar
-- Alle Dateien in `docs/features/` – bestehende Features
-
-Kurze Zusammenfassung ausgeben:
-```
-📚 Dokumentation geladen:
-- Produktdoku: [gefunden / nicht vorhanden]
-- Bekannte Begriffe: [N]
-- Nutzergruppen: [Liste oder "keine"]
-- Bestehende Features: [Liste oder "keine"]
-```
-
-Danach direkt mit Phase 1 beginnen.
+Stillschweigend lesen:
+- `docs/explanation/product.md` – Falls vorhanden, bestehende Nutzergruppen und Begriffe notieren
+- `docs/features/` – Bestehende Features
 
 ---
 
 ## Phase 1 – Feature verstehen
 
-Klärende Fragen stellen (eine nach der anderen, kein Code/Technik):
-- Welches Problem löst das Feature?
-- Wer profitiert davon und wie?
-- Welches Verhalten erwartet der Nutzer?
-- Gibt es Einschränkungen oder Randfälle?
+Fragen (eine nach der anderen):
+1. Problem/Nutzen?
+2. Betroffene Nutzergruppen?
+3. Constraints oder Randfälle?
 
-Abschluss: Feature in 3–5 Sätzen zusammenfassen, Bestätigung abwarten.
+Feature kurz zusammenfassen, Bestätigung abwarten.
 
 ---
 
 ## Phase 2 – Begriffe & Ubiquitous Language
 
-Fachbegriffe aus Phase 1 identifizieren. Bereits definierte Begriffe aus `product.md` nicht neu definieren.
+Neue Fachbegriffe aus Phase 1 identifizieren. Für jeden Begriff erfragen:
+- **Deutsch:** [Begriff]
+- **English (Code):** [Von Nutzer erfragen, nicht vorschlagen]
+- **Definition:** [Kurz erklären]
 
-Für jeden neuen Begriff:
-- Deutschen Begriff (für Diskussion) und englischen Begriff (für Code) vorschlagen
-- Definition vorschlagen, Bestätigung einholen
-
-Ausgabe nach Bestätigung:
+Tabelle bei Bestätigung:
 ```markdown
-| Deutsch | Englisch (Code) | Definition |
+| Deutsch | English (Code) | Definition |
 |---------|----------------|-----------|
-| ...     | ...            | ...       |
 ```
 
 ---
 
 ## Phase 3 – Nutzergruppen
 
-Bestehende Nutzergruppen aus `product.md` verwenden. Klären welche Gruppen betroffen sind und ob neue eingeführt werden müssen. Für neue Gruppen: Rolle und Ziele klären.
+Klären: Welche bestehenden Nutzergruppen sind betroffen? Sind neue nötig?
 
 ---
 
-## Phase 4 – Akzeptanzkriterien
+## Phase 4 – Datenfelder (Optional)
 
-3–8 testbare Kriterien definieren. Format:
-- „Gegeben [Vorbedingung], wenn [Aktion], dann [Ergebnis]"
-- Oder einfache Bullet-Points für UI/UX-Kriterien
-
-Entwurf vorlegen, iterieren bis Bestätigung.
+Falls nötig: Klären, welche Daten das Feature erfasst/nutzt.
 
 ---
 
-## Phase 5 – Dokumentation schreiben
+## Phase 5 – User Stories & Akzeptanzkriterien
 
-### `docs/explanation/product.md`
+Pro Story:
+- Klären: MVP-Scope? (Was gehört rein, was nicht?)
+- Akzeptanzkriterien definieren (nur Nutzer-Mehrwert, keine Technik/UI)
 
-Bestehenden Inhalt erweitern – **niemals Einträge entfernen**. Alphabetische Reihenfolge im Glossar. Falls Datei nicht existiert: Nutzer nach Produktname und Kurzbeschreibung fragen.
+Entwurf vorlegen, iterieren.
 
-```markdown
-# [Produktname]
+---
 
-## Beschreibung
-[Kurzbeschreibung]
+## Phase 6 – Dokumentation
 
-## Nutzergruppen
+**`docs/explanation/product.md`:** Nutzergruppen und Begriffe erweitern (nicht entfernen).
 
-### [Gruppenname]
-[Beschreibung, Rolle, Ziele]
+**`docs/features/<slug>.md`:** Feature-Spezifikation mit Motivation, Nutzergruppen, Beschreibung, Stories mit Akzeptanzkriterien.
 
-## Ubiquitäre Sprache
-
-| Deutsch | Englisch (Code) | Definition |
-|---------|----------------|-----------|
-| ...     | ...            | ...       |
-```
-
-### `docs/features/<feature-slug>.md`
-
-Slug: Kleinbuchstaben, Bindestriche, keine Sonderzeichen. Beispiel: „Benutzer Benachrichtigung" → `benutzer-benachrichtigung`
-
-```markdown
-# Feature: [Name]
-
-## Motivation
-[Problem, Grund, Auslöser]
-
-## Nutzergruppen
-[Betroffene Gruppen und ihre Rolle]
-
-## Beschreibung
-[Feature aus Nutzerperspektive, keine Implementierungsdetails]
-
-## Akzeptanzkriterien
-- Gegeben [X], wenn [Y], dann [Z]
-
-## Offene Fragen
-[Ungeklärte Punkte – leer lassen falls keine]
-```
-
-### Commit
-
-Commit nach [commit skill](./../commit/SKILL.md) mit Typ `ai(docs)`:
-```
-ai(docs): refine feature <feature-name>
-```
-
-Abschließende Ausgabe:
-```
-✅ Refinement abgeschlossen!
-📄 docs/explanation/product.md aktualisiert
-📄 docs/features/<feature-slug>.md erstellt
-```
+**Commit:** `ai(docs): refine feature <name>`
