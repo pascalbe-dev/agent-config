@@ -14,19 +14,23 @@ description: >-
 
 **Sprache:** Immer in der Sprache des Nutzers kommunizieren.
 
-Dieser Skill führt durch einen strukturierten TDD-Prozess mit zwei expliziten Freigabe-Checkpoints
-und vier Commit-Meilensteinen.
+Dieser Skill führt durch einen strukturierten Prozess mit zwei expliziten Freigabe-Checkpoints.
+Der Agent übernimmt alle Phasen vollständig. Nach jedem abgeschlossenen Teilarbeitsschritt
+wird committet – auch innerhalb einer Phase, wenn Feedback eingearbeitet wurde.
+
+**Commit-Regel:** Jeder abgeschlossene Teilarbeitsschritt = ein Commit. Kein Teilschritt bleibt
+uncommittet.
 
 ---
 
 ## Übersicht
 
 ```
-Phase 1 – Fachliche Definition        (Nutzereingabe)
-Phase 2 – Gherkin-Testfälle           (Agent schlägt vor → Freigabe 1)
-Phase 3 – Architekturplanung          (Agent plant → Freigabe 2)
-Phase 4 – Implementierung & Tests     (Nutzer entwickelt TDD-basiert)
-Phase 5 – Visual Regression Tests     (Nutzer ergänzt Playwright VRT)
+Phase 1 – Fachliche Definition     (Agent fragt, Nutzer antwortet)
+Phase 2 – Gherkin-Testfälle        (Agent erstellt → Freigabe 1 → Agent committet)
+Phase 3 – Architekturplanung       (Agent plant → Freigabe 2 → Agent committet)
+Phase 4 – Implementierung          (Agent implementiert → Agent committet)
+Phase 5 – Visual Regression Tests  (Agent schreibt Tests → Agent committet)
 ```
 
 ---
@@ -35,8 +39,8 @@ Phase 5 – Visual Regression Tests     (Nutzer ergänzt Playwright VRT)
 
 Stillschweigend erkunden:
 - Projektstruktur und verwendetes Framework (React/Angular/Vue etc.)
-- Vorhandene Komponenten, Testinfrastruktur und Konventionen
-- Playwright/Cucumber-Konfiguration, falls vorhanden
+- Vorhandene Komponenten, Playwright/Cucumber-Konfiguration und Testkonventionen
+- Bestehende Coding-Konventionen und Dateistruktur
 
 Folgende Fragen einzeln via `AskUserQuestion` stellen:
 
@@ -58,7 +62,7 @@ Auf Basis von Phase 1 fachliche Playwright/Cucumber-Testfälle im Gherkin-Format
 - Jedes Akzeptanzkriterium aus Phase 1 muss durch mindestens einen Testfall abgedeckt sein
 - Noch keine Implementierungsdetails – rein fachlich
 
-**Ausgabe:**
+**Ausgabe-Format:**
 
 ```gherkin
 Feature: [Feature-Name]
@@ -78,17 +82,13 @@ Feature: [Feature-Name]
 ```
 
 **>>> FREIGABE 1:** Via `AskUserQuestion` vorlegen:
-> „Hier sind die fachlichen Testfälle. Bitte bestätige oder gib Feedback:
-> [Gherkin-Testfälle]"
+> „Hier sind die fachlichen Testfälle. Bitte bestätige oder gib Feedback."
 
-Feedback einarbeiten und erneut vorlegen, bis explizite Freigabe erfolgt.
-Jede positive Reaktion zählt (ja, ok, passt, lgtm). Schweigen zählt nicht.
+Feedback einarbeiten, dann sofort committen und erneut vorlegen – so lange bis explizite
+Freigabe erfolgt. Jede positive Reaktion zählt (ja, ok, passt, lgtm). Schweigen zählt nicht.
 
-**Commit 1:** Nutzer informieren:
-> „Bitte committe jetzt die Gherkin-Testfälle (z.B. unter `e2e/features/<feature>.feature`).
-> Gib Bescheid, wenn der Commit erfolgt ist."
-
-Warten bis Nutzer den Commit bestätigt.
+**Commit nach Freigabe:** Testfälle in passendem Pfad ablegen (z.B. `e2e/features/<feature>.feature`)
+und committen: `test: add gherkin scenarios for <feature>`.
 
 ---
 
@@ -101,7 +101,7 @@ UI-Architekturplan erstellen. Framework-spezifische Konventionen aus Phase 1 ber
 ```
 ## Komponenten
 - [KomponentenName] – [Verantwortlichkeit, 1 Satz]
-  - Props: [Eingaben]
+  - Props/Inputs: [Eingaben]
   - Events/Outputs: [Ausgaben]
 
 ## Datenfluss
@@ -118,84 +118,78 @@ src/
   components/
     [Feature]/
       [Komponente].tsx
-      [Komponente].test.tsx
       ...
 ```
 
 **>>> FREIGABE 2:** Via `AskUserQuestion` vorlegen:
-> „Hier ist der Architekturplan. Bitte bestätige oder gib Feedback:
-> [Plan]"
+> „Hier ist der Architekturplan. Bitte bestätige oder gib Feedback."
 
-Feedback einarbeiten und erneut vorlegen, bis explizite Freigabe erfolgt.
+Feedback einarbeiten, dann sofort committen und erneut vorlegen – so lange bis explizite
+Freigabe erfolgt.
 
-**Commit 2:** Nutzer informieren:
-> „Bitte committe jetzt den Architekturplan (z.B. unter `docs/plans/YYYY-MM-DD-<feature>.md`).
-> Gib Bescheid, wenn der Commit erfolgt ist."
-
-Warten bis Nutzer den Commit bestätigt.
+**Commit nach Freigabe:** Plan unter `docs/plans/YYYY-MM-DD-<feature>.md` ablegen und
+committen: `docs: add architecture plan for <feature>`.
 
 ---
 
-## Phase 4 – Implementierung & Unit/Component Tests
+## Phase 4 – Implementierung
 
-Der Nutzer implementiert das Feature TDD-basiert nach dem Architekturplan aus Phase 3.
+Der Agent implementiert das Feature nach dem Architekturplan aus Phase 3.
 
-**Hinweise für den Nutzer ausgeben:**
+**Wichtig:** Keine Unit- oder Component-Tests in dieser Phase. Die Korrektheit wird durch
+die Gherkin-Testfälle aus Phase 2 sichergestellt, die das Feature aus Nutzerperspektive
+vollständig abdecken.
 
-```
-## Dein nächster Schritt: Implementierung
+**Vorgehen:**
+1. Komponenten schrittweise nach Plan implementieren
+2. Nach jedem sinnvollen Teilschritt (Komponente, Service, Routing etc.) committen:
+   `feat: implement <was wurde gemacht>`
+3. Am Ende alle Gherkin-Tests ausführen und sicherstellen, dass sie grün sind
 
-Entwickle das Feature TDD-basiert:
-1. Schreibe zuerst Unit/Component-Tests (noch rot)
-2. Implementiere die Komponente(n) schrittweise
-3. Stelle sicher, dass alle Tests grün sind
-4. Die Gherkin-Testfälle aus Phase 2 dienen als fachliche Referenz
+**Bei Abweichungen vom Plan:**
 
-Framework-Konventionen:
-- [Aus Phase 1 erkannte Testbibliothek, z.B. Jest + React Testing Library / Jasmine + Karma]
-- [Erkannte Mocking-Strategie]
+| Impact | Vorgehen |
+|--------|----------|
+| Hoch | Stoppen → `AskUserQuestion` → nach Antwort weitermachen und committen |
+| Niedrig | Selbst entscheiden, im Commit-Message kurz begründen |
 
-Gib Bescheid, wenn die Implementierung abgeschlossen ist und alle Tests grün sind.
-```
-
-Warten bis Nutzer die Implementierung bestätigt.
-
-**Commit 3:** Nutzer informieren:
-> „Bitte committe jetzt den implementierten Code inkl. Unit/Component-Tests.
-> Gib Bescheid, wenn der Commit erfolgt ist."
-
-Warten bis Nutzer den Commit bestätigt.
+Hoch: ungeplante Änderung an Routing/State-Management/API-Schnittstelle, Sicherheitsrelevanz
+Niedrig: interne Strukturdetails, Variablennamen, Hilfsfunktionen
 
 ---
 
 ## Phase 5 – Visual Regression Tests
 
-**Hinweise für den Nutzer ausgeben:**
+Der Agent schreibt Playwright Visual Regression Tests, die dauerhaft sicherstellen, dass
+die UI so aussieht, wie sie soll.
 
-```
-## Dein nächster Schritt: Visual Regression Tests
+**Pflicht-Coverage:**
+- Hauptzustand der Komponente(n) im Normalbetrieb
+- Relevante Interaktionszustände (hover, focus, disabled, error, loading – soweit vorhanden)
+- Responsive Breakpoints falls das Feature layout-sensitiv ist
 
-Ergänze Playwright Visual Regression Tests für die neue UI:
-1. Screenshot-Tests für die Hauptzustände der Komponente(n)
-2. Wichtige Interaktionszustände (hover, focus, error, loading)
-3. Responsive Breakpoints falls relevant
+**Test-Struktur:**
 
-Beispiel-Struktur:
-  test('zeigt Komponente korrekt an', async ({ page }) => {
-    await page.goto('/...');
-    await expect(page).toHaveScreenshot('[feature]-default.png');
+```typescript
+test.describe('[Feature-Name] Visual Regression', () => {
+  test('default state', async ({ page }) => {
+    await page.goto('/[route]');
+    await expect(page.locator('[data-testid="[komponente]"]')).toHaveScreenshot('[feature]-default.png');
   });
 
-Gib Bescheid, wenn die Visual Regression Tests hinzugefügt wurden.
+  test('error state', async ({ page }) => {
+    // Setup für Fehlerzustand
+    await expect(page.locator('[data-testid="[komponente]"]')).toHaveScreenshot('[feature]-error.png');
+  });
+});
 ```
 
-Warten bis Nutzer die Visual Regression Tests bestätigt.
+Tests ausführen und sicherstellen, dass alle Snapshots generiert werden und die Tests grün sind.
 
-**Commit 4:** Nutzer informieren:
-> „Bitte committe jetzt die Visual Regression Tests.
-> Gib Bescheid, wenn der Commit erfolgt ist."
+**Commit nach Abschluss:** `test: add visual regression tests for <feature>`
 
-Warten bis Nutzer den Commit bestätigt.
+Falls während der Test-Implementierung Feedback eingeholt wird (z.B. welche Zustände relevant sind):
+Feedback einarbeiten, committen, dann weitermachen.
 
 ---
 
@@ -204,14 +198,13 @@ Warten bis Nutzer den Commit bestätigt.
 Zusammenfassung ausgeben:
 
 ```
-## Feature abgeschlossen ✓
+## Feature abgeschlossen
 
-Commit 1 – Gherkin-Testfälle
-Commit 2 – Architekturplan
-Commit 3 – Implementierung & Unit/Component Tests
-Commit 4 – Visual Regression Tests
+Abgeschlossene Phasen:
+- Gherkin-Testfälle (Phase 2)
+- Architekturplan (Phase 3)
+- Implementierung (Phase 4)
+- Visual Regression Tests (Phase 5)
 
-Nächste Schritte (optional):
-- E2E-Tests gegen laufende Anwendung ausführen
-- Pull Request erstellen
+Alle Tests grün. Die UI ist durch Playwright-Tests dauerhaft abgesichert.
 ```
